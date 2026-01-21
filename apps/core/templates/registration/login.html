@@ -1,105 +1,221 @@
-{% load static %}
-<!doctype html>
+{% load static %} {% load widget_tweaks %}
+<!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>LendFlow — Sign In</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>html{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial}/* small fallback */</style>
+    <style>
+      html {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          Roboto, "Helvetica Neue", Arial;
+      } /* small fallback */
+    </style>
     <script>
-        tailwind.config = {theme:{extend:{colors:{emerald:{600:'#059669'},slate:{900:'#0f172a'},crimson:{500:'#ef4444'}}}}}
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              emerald: { 600: "#059669" },
+              slate: { 900: "#0f172a" },
+              crimson: { 500: "#ef4444" },
+            },
+          },
+        },
+      };
     </script>
-</head>
-<body class="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
+  </head>
+  <body class="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
     <main class="w-full max-w-md">
-        <section class="bg-white rounded-2xl shadow-md p-8">
-            <div class="flex flex-col items-center gap-3 mb-4">
-                <!-- Logo -->
-                <div class="w-14 h-14 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">LF</div>
-                <h1 class="text-xl font-semibold text-[#111827]">Welcome back to LendFlow</h1>
-                <p class="text-sm text-slate-500">Sign in to manage your investments and lending portfolio.</p>
-            </div>
-
-            <!-- Role switcher -->
-            <div class="mb-4">
-                <div class="flex border rounded-lg bg-gray-50 p-1 text-sm">
-                    <button id="roleLender" class="flex-1 py-2 rounded-lg text-center font-medium bg-white">Lender Login</button>
-                    <button id="roleBorrower" class="flex-1 py-2 rounded-lg text-center font-medium text-slate-500">Borrower Login</button>
-                </div>
-            </div>
-
-            {% if form.non_field_errors %}
-                <div class="mb-4 rounded-md bg-rose-50 border border-rose-100 p-3 text-sm text-rose-700">
-                    <strong class="block">Invalid credentials</strong>
-                    <div class="mt-1">Please check your username and password and try again.</div>
-                </div>
-            {% endif %}
-
-            <form method="post" action="{% url 'login' %}" novalidate>
-                {% csrf_token %}
-                <div class="space-y-4">
-                    <label class="block text-sm">
-                        <span class="text-sm text-slate-700">Username or Email</span>
-                        <div class="mt-1 relative">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                                <!-- user icon -->
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A7 7 0 0 1 12 15a7 7 0 0 1 6.879 2.804M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
-                            </span>
-                            {{ form.username|add_class:"pl-10 pr-3 py-2 w-full border rounded-md text-sm" }}
-                        </div>
-                    </label>
-
-                    <label class="block text-sm">
-                        <span class="text-sm text-slate-700">Password</span>
-                        <div class="mt-1 relative">
-                            {{ form.password|add_class:"pl-3 pr-10 py-2 w-full border rounded-md text-sm" }}
-                            <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-2 flex items-center text-sm text-slate-500">Show</button>
-                        </div>
-                        <div class="flex items-center justify-between mt-2">
-                            <a href="{% url 'password_reset' %}" class="text-xs text-slate-500 hover:underline">Forgot password?</a>
-                        </div>
-                    </label>
-
-                    <input type="hidden" name="next" value="{{ next }}" />
-
-                    <div>
-                        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-medium"> 
-                            <!-- lock icon -->
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 11c-1.657 0-3 1.343-3 3v3h6v-3c0-1.657-1.343-3-3-3z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 11V9a6 6 0 1 1 12 0v2"/></svg>
-                            <span>Sign in securely</span>
-                        </button>
-                    </div>
-
-                    <!-- security microcopy -->
-                    <div class="flex items-center gap-2 text-xs text-slate-500">
-                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 11c-1.657 0-3 1.343-3 3v3h6v-3c0-1.657-1.343-3-3-3z"/></svg>
-                        <p>Your data is protected with bank-grade security.</p>
-                    </div>
-                </div>
-            </form>
-        </section>
-
-        <!-- bottom micro links -->
-        <div class="mt-4 text-center text-xs text-slate-400">
-            <p>Need an account? <a href="{% url 'register' %}" class="text-emerald-600 hover:underline">Create one</a></p>
+      <section class="bg-white rounded-2xl shadow-md p-8">
+        <div class="flex flex-col items-center gap-3 mb-4">
+          <!-- Logo -->
+          <div
+            class="w-14 h-14 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold"
+          >
+            LF
+          </div>
+          <h1 class="text-xl font-semibold text-[#111827]">
+            Welcome back to LendFlow
+          </h1>
+          <p class="text-sm text-slate-500">
+            Sign in to manage your investments and lending portfolio.
+          </p>
         </div>
+
+        <!-- Role switcher -->
+        <div class="mb-4">
+          <div class="flex border rounded-lg bg-gray-50 p-1 text-sm">
+            <button
+              id="roleLender"
+              class="flex-1 py-2 rounded-lg text-center font-medium bg-white"
+            >
+              Lender Login
+            </button>
+            <button
+              id="roleBorrower"
+              class="flex-1 py-2 rounded-lg text-center font-medium text-slate-500"
+            >
+              Borrower Login
+            </button>
+          </div>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div
+          class="mb-4 rounded-md bg-rose-50 border border-rose-100 p-3 text-sm text-rose-700"
+        >
+          <strong class="block">Invalid credentials</strong>
+          <div class="mt-1">
+            Please check your username and password and try again.
+          </div>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}" novalidate>
+          {% csrf_token %}
+          <div class="space-y-4">
+            <label class="block text-sm">
+              <span class="text-sm text-slate-700">Username or Email</span>
+              <div class="mt-1 relative">
+                <span
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"
+                >
+                  <!-- user icon -->
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                      d="M5.121 17.804A7 7 0 0 1 12 15a7 7 0 0 1 6.879 2.804M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
+                    />
+                  </svg>
+                </span>
+                {{ form.username|add_class:"pl-10 pr-3 py-2 w-full border
+                rounded-md text-sm" }}
+              </div>
+            </label>
+
+            <label class="block text-sm">
+              <span class="text-sm text-slate-700">Password</span>
+              <div class="mt-1 relative">
+                {{ form.password|add_class:"pl-3 pr-10 py-2 w-full border
+                rounded-md text-sm" }}
+                <button
+                  type="button"
+                  id="togglePassword"
+                  class="absolute inset-y-0 right-0 pr-2 flex items-center text-sm text-slate-500"
+                >
+                  Show
+                </button>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <a
+                  href="{% url 'password_reset' %}"
+                  class="text-xs text-slate-500 hover:underline"
+                  >Forgot password?</a
+                >
+              </div>
+            </label>
+
+            <input type="hidden" name="next" value="{{ next }}" />
+
+            <div>
+              <button
+                type="submit"
+                class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-medium"
+              >
+                <!-- lock icon -->
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M12 11c-1.657 0-3 1.343-3 3v3h6v-3c0-1.657-1.343-3-3-3z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M6 11V9a6 6 0 1 1 12 0v2"
+                  />
+                </svg>
+                <span>Sign in securely</span>
+              </button>
+            </div>
+
+            <!-- security microcopy -->
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+              <svg
+                class="w-4 h-4 text-emerald-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M12 11c-1.657 0-3 1.343-3 3v3h6v-3c0-1.657-1.343-3-3-3z"
+                />
+              </svg>
+              <p>Your data is protected with bank-grade security.</p>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- bottom micro links -->
+      <div class="mt-4 text-center text-xs text-slate-400">
+        <p>
+          Need an account?
+          <a
+            href="{% url 'register' %}"
+            class="text-emerald-600 hover:underline"
+            >Create one</a
+          >
+        </p>
+      </div>
     </main>
 
     <script>
-        // Password toggle
-        document.getElementById('togglePassword')?.addEventListener('click', function(){
-            const pw = document.querySelector('input[name="password"]');
-            if(!pw) return;
-            if(pw.type === 'password'){ pw.type = 'text'; this.textContent = 'Hide'; }
-            else { pw.type = 'password'; this.textContent = 'Show'; }
+      // Password toggle
+      document
+        .getElementById("togglePassword")
+        ?.addEventListener("click", function () {
+          const pw = document.querySelector('input[name="password"]');
+          if (!pw) return;
+          if (pw.type === "password") {
+            pw.type = "text";
+            this.textContent = "Hide";
+          } else {
+            pw.type = "password";
+            this.textContent = "Show";
+          }
         });
 
-        // Role tabs visual toggle
-        const lenderBtn = document.getElementById('roleLender');
-        const borrowerBtn = document.getElementById('roleBorrower');
-        lenderBtn?.addEventListener('click', () => { lenderBtn.classList.add('bg-white'); borrowerBtn.classList.remove('bg-white'); });
-        borrowerBtn?.addEventListener('click', () => { borrowerBtn.classList.add('bg-white'); lenderBtn.classList.remove('bg-white'); });
+      // Role tabs visual toggle
+      const lenderBtn = document.getElementById("roleLender");
+      const borrowerBtn = document.getElementById("roleBorrower");
+      lenderBtn?.addEventListener("click", () => {
+        lenderBtn.classList.add("bg-white");
+        borrowerBtn.classList.remove("bg-white");
+      });
+      borrowerBtn?.addEventListener("click", () => {
+        borrowerBtn.classList.add("bg-white");
+        lenderBtn.classList.remove("bg-white");
+      });
     </script>
-</body>
+  </body>
 </html>
