@@ -137,8 +137,9 @@ def htmx_repay(request):
 
 @login_required
 def lender_dashboard(request):
+    from accounts.models import User
     # Redirect borrowers to borrower dashboard
-    if not getattr(request.user, 'is_lender', False):
+    if request.user.role != User.Role.LOAN_OFFICER:
         return redirect('dashboard')
 
     # Basic data population (replace with richer queries as needed)
@@ -177,10 +178,11 @@ def login_router(request):
     """
     Redirect users after login based on role.
     """
+    from accounts.models import User
     user = request.user
-    if getattr(user, 'is_lender', False):
+    if user.role == User.Role.LOAN_OFFICER:
         return redirect('lender_dashboard')
-    if getattr(user, 'is_borrower', False):
+    if user.role == User.Role.BORROWER:
         return redirect('dashboard')
     # fallback
     if user.is_staff or user.is_superuser:
@@ -193,7 +195,8 @@ def profile(request):
     user = request.user
     # Basic profile context — expand as needed
     recent_transactions = Transaction.objects.filter(user=user).order_by('-timestamp')[:5]
-    loans = Loan.objects.filter(borrower=user) if getattr(user, 'is_borrower', False) else Loan.objects.none()
+    from accounts.models import User
+    loans = Loan.objects.filter(borrower=user) if user.role == User.Role.BORROWER else Loan.objects.none()
     context = {
         'user': user,
         'recent_transactions': recent_transactions,

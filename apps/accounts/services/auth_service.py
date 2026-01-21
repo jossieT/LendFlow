@@ -1,14 +1,14 @@
 from django.contrib.auth import login
 from django.db import transaction
+from ..models import User
 
 class AuthService:
     @staticmethod
     @transaction.atomic
-    def register_user(request, form, role='borrower', email=''):
+    def register_user(request, form, role=User.Role.BORROWER, email=''):
         user = form.save(commit=False)
         user.email = email
-        user.is_lender = (role == 'lender')
-        user.is_borrower = (role != 'lender')
+        user.role = role
         user.save()
         login(request, user)
         return user

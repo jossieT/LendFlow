@@ -15,11 +15,21 @@ def register(request):
 	if request.method == 'POST':
 		form = UserCreationForm(request.POST)
 		if form.is_valid():
+			# Role mapping: borrower -> BORROWER, lender -> LOAN_OFFICER
+			raw_role = request.POST.get('role', 'borrower')
+			role_mapping = {
+				'borrower': User.Role.BORROWER,
+				'lender': User.Role.LOAN_OFFICER,
+				'officer': User.Role.LOAN_OFFICER,
+				'admin': User.Role.ADMIN,
+			}
+			role = role_mapping.get(raw_role, User.Role.BORROWER)
+			
 			# Use AuthService
 			AuthService.register_user(
 				request=request,
 				form=form,
-				role=request.POST.get('role', 'borrower'),
+				role=role,
 				email=request.POST.get('email', '')
 			)
 			return redirect('login_router')
