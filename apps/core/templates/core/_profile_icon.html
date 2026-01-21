@@ -1,0 +1,30 @@
+{% load static %}
+{% if user.is_authenticated %}
+<div class="relative inline-block text-left">
+  <div>
+    <button id="profileBtn" type="button" class="inline-flex items-center gap-2 px-2 py-1 rounded-full hover:bg-slate-100" aria-expanded="false">
+      <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-sm font-medium text-slate-700">{{ user.username|slice:":1"|upper }}</span>
+      <span class="hidden sm:inline text-sm text-slate-700">{{ user.get_full_name|default:user.username }}</span>
+    </button>
+  </div>
+
+  <div id="profileMenu" class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden">
+    <div class="py-1">
+      <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Profile</a>
+      <a href="#" onclick="event.preventDefault(); window.location.href='{% url 'logout' %}';" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Logout</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('profileBtn')?.addEventListener('click', function(e){
+    e.stopPropagation();
+    const menu = document.getElementById('profileMenu');
+    if(menu) menu.classList.toggle('hidden');
+  });
+  document.addEventListener('click', function(){
+    const menu = document.getElementById('profileMenu');
+    if(menu) menu.classList.add('hidden');
+  });
+</script>
+{% endif %}

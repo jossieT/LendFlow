@@ -1,0 +1,38 @@
+<div>
+    {% if active_loans and active_loans.paginator.count > 0 %}
+        <table style="width:100%;border-collapse:collapse">
+            <thead>
+                <tr style="text-align:left;color:#7f8c8d;font-size:0.9em">
+                    <th>Loan</th>
+                    <th>Amount</th>
+                    <th>Interest</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for loan in active_loans %}
+                    <tr style="border-top:1px solid #ecf0f1">
+                        <td>#{{ loan.id }} — {{ loan.description|truncatechars:40 }}</td>
+                        <td>${{ loan.amount }}</td>
+                        <td>{{ loan.interest_rate }}%</td>
+                        <td>{{ loan.status }}</td>
+                        <td>{{ loan.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top:12px;text-align:right;color:#7f8c8d">
+            {% if active_loans.has_previous %}
+                <button hx-get="?page={{ active_loans.previous_page_number }}" hx-target="this.closest('.htmx-loans-container')" hx-swap="outerHTML">Previous</button>
+            {% endif %}
+            <span style="margin:0 8px">Page {{ active_loans.number }} / {{ active_loans.paginator.num_pages }}</span>
+            {% if active_loans.has_next %}
+                <button hx-get="?page={{ active_loans.next_page_number }}" hx-target="this.closest('.htmx-loans-container')" hx-swap="outerHTML">Next</button>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No active loans — good job staying current.</p>
+    {% endif %}
+</div>

@@ -1,0 +1,8 @@
+<div>
+    <h3>Make a repayment</h3>
+    <form method="post" hx-post="{% url 'htmx_repay' %}" hx-target="#modal-body" hx-swap="innerHTML">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div style="margin-top:8px"><button type="submit">Record Repayment</button></div>
+    </form>
+</div>

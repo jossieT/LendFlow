@@ -1,0 +1,8 @@
+<div>
+    <h3>Apply for a loan</h3>
+    <form method="post" hx-post="{% url 'htmx_apply_loan' %}" hx-target="#modal-body" hx-swap="innerHTML">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div style="margin-top:8px"><button type="submit">Submit Application</button></div>
+    </form>
+</div>

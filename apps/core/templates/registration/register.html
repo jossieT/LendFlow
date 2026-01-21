@@ -1,0 +1,109 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Create account — LendFlow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>html{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial}</style>
+</head>
+<body class="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
+  <main class="w-full max-w-lg">
+    <section class="bg-white rounded-2xl shadow-md p-8">
+      <div class="flex flex-col items-center gap-3 mb-6">
+        <div class="w-14 h-14 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">LF</div>
+        <h1 class="text-xl font-semibold text-[#111827]">Create your LendFlow account</h1>
+        <p class="text-sm text-slate-500">Join as a lender or borrower to get started.</p>
+      </div>
+
+      <form method="post" action="{% url 'register' %}" class="space-y-4">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block text-sm">
+            <span class="text-sm text-slate-700">Username</span>
+            {{ form.username|add_class:"mt-1 block w-full rounded-md border px-3 py-2 text-sm" }}
+          </label>
+          <label class="block text-sm">
+            <span class="text-sm text-slate-700">Email</span>
+            {{ form.email|add_class:"mt-1 block w-full rounded-md border px-3 py-2 text-sm" }}
+          </label>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block text-sm">
+            <span class="text-sm text-slate-700">Password</span>
+            {{ form.password1|add_class:"mt-1 block w-full rounded-md border px-3 py-2 text-sm" }}
+          </label>
+          <label class="block text-sm">
+            <span class="text-sm text-slate-700">Confirm Password</span>
+            {{ form.password2|add_class:"mt-1 block w-full rounded-md border px-3 py-2 text-sm" }}
+          </label>
+        </div>
+
+        <!-- Role selector -->
+        <div class="p-3 rounded-lg bg-gray-50 border">
+          <p class="text-sm text-slate-600 mb-2">I want to register as a:</p>
+          <div class="flex gap-3">
+            <label class="flex-1">
+              <input type="radio" name="role" value="borrower" checked class="sr-only" />
+              <div class="py-2 px-3 rounded-lg text-center border bg-white hover:bg-gray-50">Borrower</div>
+            </label>
+            <label class="flex-1">
+              <input type="radio" name="role" value="lender" class="sr-only" />
+              <div class="py-2 px-3 rounded-lg text-center border bg-white hover:bg-gray-50">Lender</div>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-medium">Create account</button>
+        </div>
+      </form>
+
+      <div class="mt-4 text-center text-sm text-slate-500">
+        Already have an account? <a href="{% url 'login' %}" class="text-emerald-600 hover:underline">Sign in</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // enhance the radio visuals
+    document.querySelectorAll('input[name="role"]').forEach(function(r){
+      r.addEventListener('change', function(){
+        document.querySelectorAll('input[name="role"]').forEach(function(i){
+          const el = i.closest('label').querySelector('div');
+          if(i.checked) el.classList.add('bg-white','ring-2','ring-emerald-200');
+          else el.classList.remove('ring-2','ring-emerald-200');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Register — LendFlow</title>
+    <style>
+        body{font-family:Arial,Helvetica,sans-serif;background:#f4f7f6;padding:40px}
+        .box{max-width:520px;margin:40px auto;background:#fff;padding:24px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06)}
+        input{width:100%;padding:10px;margin:8px 0;border:1px solid #ddd;border-radius:4px}
+        button{background:#27ae60;color:#fff;padding:10px 14px;border:none;border-radius:4px;cursor:pointer}
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Create an account</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Register</button>
+        </form>
+        <p style="margin-top:8px">Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+    </div>
+</body>
+</html>

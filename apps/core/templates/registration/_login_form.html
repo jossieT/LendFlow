@@ -1,0 +1,6 @@
+<form method="post" hx-post="{% url 'htmx_login_fragment' %}" hx-target="#htmx-login-root" hx-swap="outerHTML">
+    {% csrf_token %}
+    {{ form.username }}
+    {{ form.password }}
+    <div style="margin-top:8px"><button type="submit">Sign in</button></div>
+</form>

@@ -1,0 +1,232 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LendFlow — Lender Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = {theme:{extend:{colors:{accent:{DEFAULT:'#0f766e'}}}}};</script>
+  <script src="https://unpkg.com/lucide/dist/lucide.min.js"></script>
+</head>
+<body class="bg-[#F9FAFB] text-[#111827] antialiased">
+  <div class="min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="w-72 bg-white shadow-sm hidden md:block">
+      <div class="px-6 py-8">
+        <a href="#" class="flex items-center gap-3">
+          <div class="bg-emerald-600 text-white font-bold rounded-md w-10 h-10 flex items-center justify-center">LF</div>
+          <div>
+            <h1 class="text-lg font-semibold">LendFlow</h1>
+            <p class="text-xs text-slate-500">Lender Portal</p>
+          </div>
+        </a>
+      </div>
+
+      <nav aria-label="Main navigation" class="px-4">
+        <ul class="space-y-1">
+          <li><a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-50">Overview</a></li>
+          <li><a href="#portfolio" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-50">My Portfolio</a></li>
+          <li><a href="#marketplace" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-50">Marketplace</a></li>
+          <li><a href="#repayments" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-50">Repayments</a></li>
+          <li><a href="#settings" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-50">Settings</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Content -->
+    <div class="flex-1">
+      <main class="p-6 md:p-8">
+        <header class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-semibold">Investment Overview</h2>
+            <p class="text-sm text-slate-500 mt-1">Snapshot of your active investments</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="px-3 py-2 bg-emerald-600 text-white rounded-md text-sm">New Investment</button>
+            <button class="px-3 py-2 bg-white border rounded-md text-sm">Export</button>
+            {% if user.is_authenticated %}
+              {% include 'core/_profile_icon.html' %}
+            {% endif %}
+          </div>
+        </header>
+
+        <!-- Overview grid -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <article class="bg-white rounded-lg shadow p-5">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-sm text-slate-500">Total Invested</p>
+                <p class="mt-2 text-2xl font-semibold">${{ total_invested|default:'0.00' }}</p>
+                <p class="text-xs text-slate-400 mt-1">Principal in active loans</p>
+              </div>
+              <div class="text-slate-400">
+                <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+              </div>
+            </div>
+          </article>
+
+          <article class="bg-white rounded-lg shadow p-5">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-sm text-slate-500">Expected Returns</p>
+                <p class="mt-2 text-2xl font-semibold">${{ expected_returns|default:'0.00' }}</p>
+                <p class="text-xs text-slate-400 mt-1">Projected interest earnings</p>
+              </div>
+              <div class="text-slate-400">
+                <i data-lucide="trending-up" class="w-6 h-6"></i>
+              </div>
+            </div>
+          </article>
+
+          <article class="bg-white rounded-lg shadow p-5">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-sm text-slate-500">Net Profit</p>
+                <p class="mt-2 text-2xl font-semibold text-emerald-600">${{ net_profit|default:'0.00' }}</p>
+                <p class="text-xs text-slate-400 mt-1">Interest already collected</p>
+              </div>
+              <div class="text-slate-400">
+                <i data-lucide="award" class="w-6 h-6"></i>
+              </div>
+            </div>
+          </article>
+
+          <article class="bg-white rounded-lg shadow p-5">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-sm text-slate-500">Weighted Avg Risk</p>
+                <p class="mt-2 text-2xl font-semibold">{{ weighted_risk|default:'B' }}</p>
+                <p class="text-xs text-slate-400 mt-1">Portfolio risk grade</p>
+              </div>
+              <div class="text-slate-400">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Left: Portfolio Diversification + Marketplace -->
+          <div class="lg:col-span-2 space-y-6">
+            <!-- Diversification chart placeholder -->
+            <div class="bg-white rounded-lg shadow p-6">
+              <h3 class="text-lg font-semibold mb-3">Portfolio Diversification</h3>
+              <div class="flex flex-col md:flex-row md:items-center md:gap-6">
+                <div class="w-full md:w-1/3 flex items-center justify-center">
+                  <!-- circle placeholder -->
+                  <div class="relative w-40 h-40 flex items-center justify-center">
+                    <svg viewBox="0 0 36 36" class="w-40 h-40">
+                      <path class="text-slate-100" stroke="#E6F6F2" stroke-width="6" fill="none" d="M18 2 A16 16 0 1 1 17.999 2"/>
+                      <!-- Use portions to indicate distribution (placeholder) -->
+                      <circle cx="18" cy="18" r="10" fill="#ECFDF5"></circle>
+                    </svg>
+                    <div class="absolute text-center">
+                      <p class="text-sm text-slate-500">Diversification</p>
+                      <p class="text-xl font-semibold">{{ diversification_total|default:'100%' }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex-1">
+                  <ul class="space-y-3">
+                    {% for cat, pct in diversification.items %}
+                      <li class="flex items-center justify-between">
+                        <div>
+                          <p class="text-sm font-medium">{{ cat }}</p>
+                          <p class="text-xs text-slate-400">{{ pct }}%</p>
+                        </div>
+                        <div class="w-1/2">
+                          <div class="bg-slate-100 h-3 rounded-full">
+                            <div class="h-3 rounded-full bg-emerald-500" style="width:{{ pct }}%"></div>
+                          </div>
+                        </div>
+                      </li>
+                    {% empty %}
+                      <li class="text-sm text-slate-500">No diversification data yet.</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Marketplace quick view -->
+            <div id="marketplace" class="bg-white rounded-lg shadow p-6">
+              <h3 class="text-lg font-semibold mb-3">Marketplace — New Loan Requests</h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                  <thead>
+                    <tr class="text-left text-slate-500 border-b">
+                      <th class="py-2 pl-3">Borrower</th>
+                      <th class="py-2">Interest</th>
+                      <th class="py-2">Progress</th>
+                      <th class="py-2">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y">
+                    {% for loan in available_loans %}
+                      <tr class="hover:bg-slate-50">
+                        <td class="py-3 pl-3">
+                          <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-sm text-slate-700">{{ loan.borrower.username|slice:":1"|upper }}</div>
+                            <div>
+                              <div class="font-medium">{{ loan.borrower.get_full_name|default:loan.borrower.username }}</div>
+                              <div class="text-xs text-slate-400">Grade {{ loan.borrower.grade|default:'B' }}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="py-3">{{ loan.interest_rate }}%</td>
+                        <td class="py-3">
+                          <div class="w-48">
+                            <div class="bg-slate-100 h-3 rounded-full">
+                              <div class="h-3 rounded-full bg-emerald-500" style="width:{{ loan.funded_percent|default:0 }}%"></div>
+                            </div>
+                            <div class="text-xs text-slate-400 mt-1">{{ loan.funded_percent|default:0 }}% Funded</div>
+                          </div>
+                        </td>
+                        <td class="py-3">
+                          <button class="px-3 py-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white">Invest Now</button>
+                        </td>
+                      </tr>
+                    {% empty %}
+                      <tr><td colspan="4" class="py-6 text-center text-slate-500">No new loan requests available.</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right column: Repayment calendar -->
+          <aside class="space-y-6">
+            <div class="bg-white rounded-lg shadow p-4">
+              <h4 class="text-sm font-semibold">Next Repayments</h4>
+              <ul class="mt-3 space-y-3 text-sm">
+                {% for r in repayment_calendar %}
+                  <li class="flex items-center justify-between">
+                    <div>
+                      <div class="font-medium">{{ r.loan_title|default:'Loan #'|add:r.loan_id }}</div>
+                      <div class="text-xs text-slate-400">Due {{ r.date|date:"M d" }}</div>
+                    </div>
+                    <div class="font-medium text-slate-800">${{ r.amount }}</div>
+                  </li>
+                {% empty %}
+                  <li class="text-sm text-slate-500">No upcoming repayments.</li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-4">
+              <h4 class="text-sm font-semibold">Insights</h4>
+              <p class="text-xs text-slate-500 mt-2">Weighted risk: <span class="font-medium">{{ weighted_risk|default:'B' }}</span></p>
+              <p class="text-xs text-slate-500 mt-2">Active investments: <span class="font-medium">{{ active_investments.count|default:0 }}</span></p>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>lucide.createIcons()</script>
+</body>
+</html>
