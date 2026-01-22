@@ -26,5 +26,6 @@ urlpatterns = [
     path('accounts/htmx-login/', accounts_views.htmx_login_fragment, name='htmx_login_fragment'),
     path('accounts/profile/', core_views.login_router, name='login_router'),
     path('api/accounts/', include('accounts.api_urls')),
+    path('api/products/', include('loan_products.api_urls')),
     path('', include('core.urls')), 
 ]
