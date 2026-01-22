@@ -27,5 +27,6 @@ urlpatterns = [
     path('accounts/profile/', core_views.login_router, name='login_router'),
     path('api/accounts/', include('accounts.api_urls')),
     path('api/products/', include('loan_products.api_urls')),
+    path('api/applications/', include('loan_applications.api_urls')),
     path('', include('core.urls')), 
 ]

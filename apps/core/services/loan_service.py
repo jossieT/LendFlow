@@ -1,16 +1,19 @@
 from django.db import transaction
-from ..models import Loan, Transaction
+from ..models import Transaction
+from loan_applications.models import LoanApplication
 
 class LoanService:
     @staticmethod
     @transaction.atomic
     def apply_for_loan(user, amount, interest_rate, description=''):
-        loan = Loan.objects.create(
+        # Legacy shim - create a Draft application
+        loan = LoanApplication.objects.create(
             borrower=user,
             amount=amount,
-            interest_rate=interest_rate,
-            description=description,
-            status='pending'
+            # interest_rate is handled by LoanProduct, so we ignore it here or map it
+            remarks=description,
+            status=LoanApplication.Status.DRAFT,
+            created_by=user
         )
         return loan
 

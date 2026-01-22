@@ -43,6 +43,8 @@ PROJECT_APPS = [
     'accounts',
     'core',
     'loan_products',
+    'loan_applications',
+    'loans',
 ]
 
 INSTALLED_APPS = PREREQ_APPS + EXTERNAL_APPS + PROJECT_APPS
