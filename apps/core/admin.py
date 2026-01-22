@@ -1,11 +1,5 @@
 from django.contrib import admin
-from .models import Loan, Transaction
-
-@admin.register(Loan)
-class LoanAdmin(admin.ModelAdmin):
-    list_display = ('id', 'borrower', 'amount', 'interest_rate', 'status', 'created_at')
-    list_filter = ('status',)
-    search_fields = ('borrower__username', 'description')
+from .models import Transaction
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):

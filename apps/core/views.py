@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from .models import Loan, Transaction
+from .models import Transaction
+from loans.models import Loan
+from loan_applications.models import LoanApplication
 from django.db.models import Sum
 from django.core.paginator import Paginator
 from django.template.loader import render_to_string
@@ -17,9 +19,9 @@ def dashboard(request):
     user = request.user
 
     loans = Loan.objects.filter(borrower=user)
-    active_loans = loans.exclude(status__in=['paid', 'cancelled'])
-    total_borrowed = loans.aggregate(total=Sum('amount'))['total'] or 0
-    total_outstanding = active_loans.aggregate(total=Sum('amount'))['total'] or 0
+    active_loans = loans.filter(is_active=True)
+    total_borrowed = loans.aggregate(total=Sum('principal'))['total'] or 0
+    total_outstanding = active_loans.aggregate(total=Sum('principal'))['total'] or 0
 
     recent_transactions = (
         Transaction.objects.filter(user=user)
@@ -71,9 +73,9 @@ def htmx_transactions(request):
 def htmx_loans_chart(request):
     user = request.user
     # Simple chart data: last 6 loans amounts
-    recent = Loan.objects.filter(borrower=user).order_by('-created_at')[:6]
-    labels = [l.created_at.strftime('%b %d') for l in recent][::-1]
-    data = [float(l.amount) for l in recent][::-1]
+    recent = Loan.objects.filter(borrower=user).order_by('-disbursement_date')[:6]
+    labels = [l.disbursement_date.strftime('%b %d') for l in recent][::-1]
+    data = [float(l.principal) for l in recent][::-1]
 
     html = render_to_string('core/_loans_chart.html', {'labels': labels, 'data': data})
     return HttpResponse(html)
@@ -81,8 +83,9 @@ def htmx_loans_chart(request):
 
 class ApplyLoanForm(forms.ModelForm):
     class Meta:
-        model = Loan
-        fields = ['amount', 'interest_rate', 'description']
+        # Note: ApplyLoanForm should probably use LoanApplication now
+        model = LoanApplication
+        fields = ['amount', 'term', 'remarks']
 
 
 from .services.loan_service import LoanService, LedgerService
@@ -94,12 +97,14 @@ def htmx_apply_loan(request):
     if request.method == 'POST':
         form = ApplyLoanForm(request.POST)
         if form.is_valid():
-            # Use Service Layer
-            LoanService.apply_for_loan(
-                user=user,
+            # Legacy service call — this should be refactored to use the new flow
+            # For now, just create a Draft application
+            LoanApplication.objects.create(
+                borrower=user,
                 amount=form.cleaned_data['amount'],
-                interest_rate=form.cleaned_data['interest_rate'],
-                description=form.cleaned_data.get('description', '')
+                term=form.cleaned_data['term'],
+                remarks=form.cleaned_data.get('remarks', ''),
+                created_by=user
             )
             return HttpResponse("<div>Loan application submitted.</div>")
     else:
@@ -122,7 +127,7 @@ def htmx_repay(request):
         form = RepayForm(request.POST)
         if form.is_valid():
             # Use Service Layer
-            LedgerService.record_repayment(
+            LedgerService.record_deposit(
                 user=user,
                 amount=form.cleaned_data['amount'],
                 description=form.cleaned_data.get('description', '')
@@ -143,12 +148,12 @@ def lender_dashboard(request):
         return redirect('dashboard')
 
     # Basic data population (replace with richer queries as needed)
-    active_investments = Loan.objects.filter(borrower__isnull=False, status='active')
-    total_invested = active_investments.aggregate(total=Sum('amount'))['total'] or 0
-    expected_returns = active_investments.aggregate(total=Sum('amount'))['total'] and (total_invested * 0.06) or 0
-    net_profit = Transaction.objects.filter(user=request.user, transaction_type='interest').aggregate(total=Sum('amount'))['total'] or 0
+    active_investments = Loan.objects.filter(is_active=True)
+    total_invested = active_investments.aggregate(total=Sum('principal'))['total'] or 0
+    expected_returns = total_invested * Decimal('0.06') if total_invested else 0
+    net_profit = Transaction.objects.filter(transaction_type='interest').aggregate(total=Sum('amount'))['total'] or 0
 
-    available_loans = Loan.objects.filter(status='pending').exclude(borrower=request.user)[:5]
+    available_loans = LoanApplication.objects.filter(status=LoanApplication.Status.SUBMITTED)[:5]
 
     # Simple placeholders for diversification and calendar
     diversification = {
