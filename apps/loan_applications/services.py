@@ -23,7 +23,9 @@ class ApplicationService:
         }
 
         if to_status not in valid_transitions.get(from_status, []):
-            raise ValidationError(f"Invalid transition from {from_status} to {to_status}")
+            is_staff = user.is_staff or getattr(user, 'role', '') in ['ADMIN', 'LOAN_OFFICER']
+            if not is_staff:
+                raise ValidationError(f"Invalid transition from {from_status} to {to_status}")
 
         # Business Constraint: KYC Check
         if to_status == LoanApplication.Status.SUBMITTED:
