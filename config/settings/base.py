@@ -45,6 +45,7 @@ PROJECT_APPS = [
     'loan_products',
     'loan_applications',
     'loans',
+    'payments',
 ]
 
 INSTALLED_APPS = PREREQ_APPS + EXTERNAL_APPS + PROJECT_APPS

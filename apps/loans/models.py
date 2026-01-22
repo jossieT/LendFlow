@@ -88,3 +88,22 @@ class LoanInstallment(AuditBaseModel):
 
     def __str__(self):
         return f"Installment {self.id} for Loan {self.loan_id} (Due: {self.due_date})"
+
+    def apply_funds(self, penalty_amount, interest_amount, principal_amount):
+        """
+        Updates paid amounts and recalculates status.
+        """
+        from decimal import Decimal
+        self.penalty_paid += Decimal(str(penalty_amount))
+        self.interest_paid += Decimal(str(interest_amount))
+        self.principal_paid += Decimal(str(principal_amount))
+        
+        total_expected = self.penalty_expected + self.interest_expected + self.principal_expected
+        total_paid = self.penalty_paid + self.interest_paid + self.principal_paid
+        
+        if total_paid >= total_expected:
+            self.status = self.Status.PAID
+        elif total_paid > 0:
+            self.status = self.Status.PARTIAL
+        
+        self.save()
