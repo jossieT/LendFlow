@@ -13,20 +13,20 @@ class LoanApplicationAdmin(admin.ModelAdmin):
     
     def save_model(self, request, obj, form, change):
         if change and 'status' in form.changed_data:
-            # If status is manually changed in admin, try to use the service for logic
+            new_status = obj.status
+            # Revert the object status to original for transition logic in service
+            obj.status = form.initial.get('status')
             try:
-                # We skip the service transition if it's a force change, 
-                # but for the walkthrough flow, we want the logic to trigger (like disbursal)
                 ApplicationService.transition_status(
                     obj, 
-                    obj.status, 
+                    new_status, 
                     request.user, 
                     reason="Manual Admin Update"
                 )
+                # Note: transition_status already calls application.save()
             except Exception as e:
                 messages.error(request, f"Transition failed: {str(e)}")
-                # Revert status if transition fails
-                obj.status = LoanApplication.objects.get(pk=obj.pk).status
+                # Current obj.status is already the old value
                 super().save_model(request, obj, form, change)
         else:
             super().save_model(request, obj, form, change)

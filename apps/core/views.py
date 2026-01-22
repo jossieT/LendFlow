@@ -127,7 +127,7 @@ def htmx_repay(request):
         form = RepayForm(request.POST)
         if form.is_valid():
             # Use Service Layer
-            LedgerService.record_repayment(
+            LedgerService.record_deposit(
                 user=user,
                 amount=form.cleaned_data['amount'],
                 description=form.cleaned_data.get('description', '')

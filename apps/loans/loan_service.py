@@ -28,6 +28,11 @@ class LoanService:
         )
         
         LoanService.generate_installments(loan, user)
+        
+        # Record disbursement in ledger
+        from core.services.loan_service import LedgerService
+        LedgerService.record_disbursement(loan.borrower, loan.principal, loan.id)
+        
         return loan
 
     @staticmethod

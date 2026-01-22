@@ -20,17 +20,48 @@ class LoanService:
 class LedgerService:
     @staticmethod
     @transaction.atomic
-    def record_repayment(user, amount, description=''):
-        # Create transaction record
+    def record_deposit(user, amount, description=''):
+        """
+        Record manual deposit/funding of the account.
+        """
         tx = Transaction.objects.create(
             user=user,
             amount=amount,
-            transaction_type='repayment',
-            description=description
+            transaction_type='deposit',
+            description=description or 'Account cooling'
         )
-        
-        # Update user balance
         user.balance += amount
         user.save()
-        
+        return tx
+
+    @staticmethod
+    @transaction.atomic
+    def record_disbursement(user, amount, loan_id):
+        """
+        Record loan disbursement into the borrower's account.
+        """
+        tx = Transaction.objects.create(
+            user=user,
+            amount=amount,
+            transaction_type='disbursement',
+            description=f'Disbursement for Loan #{loan_id}'
+        )
+        user.balance += amount
+        user.save()
+        return tx
+
+    @staticmethod
+    @transaction.atomic
+    def record_repayment_charge(user, amount, loan_id):
+        """
+        Deduct funds from user balance for loan repayment.
+        """
+        tx = Transaction.objects.create(
+            user=user,
+            amount=-amount,
+            transaction_type='repayment',
+            description=f'Repayment for Loan #{loan_id}'
+        )
+        user.balance -= amount
+        user.save()
         return tx
