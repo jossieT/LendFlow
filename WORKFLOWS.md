@@ -14,6 +14,14 @@ This document lists the available operational workflows for the LendFlow system.
 **Command**: `/repay-loan`
 **Description**: Outlines the process for initiating payments, handling webhooks, and manually adjusting repayment allocations.
 
+### 3. [Technical Payment Flow](.agent/workflows/payment-technical-flow.md)
+
+**Description**: Deep dive into the internal engineering lifecycle of a payment (Idempotency, Locking, and Waterfall).
+
+### 4. [Admin: Manually Adding a Payment](.agent/workflows/add-payment-admin.md)
+
+**Description**: Non-technical step-by-step guide for staff to record payments via the Admin portal.
+
 ## Implementation Standards
 
 All workflows must adhere to the FOLLOWING principles:
