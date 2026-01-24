@@ -28,13 +28,17 @@ class PaymentAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'loan', 'amount', 'currency', 'status', 'payment_method', 'created_at']
     list_filter = ['status', 'payment_method', 'created_at']
     search_fields = ['user__username', 'gateway_reference', 'idempotency_key']
+    actions = ['process_allocation_action']
     inlines = [PaymentGatewayTransactionInline, RepaymentAllocationInline, PaymentAuditLogInline]
     
-    readonly_fields = [
-        'user', 'loan', 'amount', 'currency', 'payment_method', 
-        'gateway_reference', 'idempotency_key', 'metadata', 'captured_at',
-        'created_at', 'updated_at'
-    ]
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # editing an existing object
+            return [
+                'user', 'loan', 'amount', 'currency', 'payment_method', 
+                'gateway_reference', 'idempotency_key', 'metadata', 'captured_at',
+                'created_at', 'updated_at'
+            ]
+        return ['captured_at', 'created_at', 'updated_at']
     
     fieldsets = (
         ('Identifiers', {
@@ -72,6 +76,16 @@ class PaymentAdmin(admin.ModelAdmin):
                     created_by=request.user
                 )
         super().save_model(request, obj, form, change)
+
+    def process_allocation_action(self, request, queryset):
+        success_count = 0
+        for payment in queryset:
+            if payment.status == Payment.Status.COMPLETED:
+                from .services.repayment_service import RepaymentAllocationService
+                RepaymentAllocationService.process_payment(payment)
+                success_count += 1
+        self.message_user(request, f"Successfully processed allocation for {success_count} payments.")
+    process_allocation_action.short_description = "Process fund allocation for completed payments"
 
 @admin.register(RepaymentAllocation)
 class RepaymentAllocationAdmin(admin.ModelAdmin):
