@@ -98,6 +98,12 @@ class ApplicationService:
         Credit the borrower's balance.
         """
         borrower = application.borrower
+        
+        # Hard Stop Compliance Check: Disbursement to Blacklisted User
+        from compliance.services import BlacklistService
+        if BlacklistService.is_blacklisted(borrower):
+            raise ValidationError("Disbursement blocked: The user is currently blacklisted.")
+
         borrower.balance += application.amount
         borrower.save()
         

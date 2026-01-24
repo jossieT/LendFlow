@@ -20,3 +20,5 @@ class AuditEventType(models.TextChoices):
     
     # Compliance Events
     COMPLIANCE_RISK_EVALUATION = 'COMPLIANCE.RISK_EVALUATION', 'Compliance Risk Evaluation'
+    USER_BLACKLISTED = 'COMPLIANCE.USER_BLACKLISTED', 'User Blacklisted'
+    USER_WHITELISTED = 'COMPLIANCE.USER_WHITELISTED', 'User Whitelisted'

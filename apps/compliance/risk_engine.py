@@ -28,7 +28,8 @@ class RiskEngineService:
         results = {}
 
         # R01: Global Blacklist
-        if user.is_blacklisted:
+        from .services import BlacklistService
+        if user.is_blacklisted or BlacklistService.is_blacklisted(user):
             return cls._finalize_evaluation(
                 False, 'USER_BLACKLISTED', "User is on the global blacklist.",
                 application, actor, results

@@ -47,3 +47,38 @@ class AuditLog(models.Model):
 
     def delete(self, *args, **kwargs):
         raise ValidationError("Audit records are immutable and cannot be deleted.")
+
+class Blacklist(models.Model):
+    """
+    Formal record of blacklisted users with reasons and timestamps.
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='blacklist_records'
+    )
+    reason = models.TextField()
+    is_active = models.BooleanField(default=True, db_index=True)
+    
+    # Audit trail
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_blacklists'
+    )
+
+    class Meta:
+        verbose_name_plural = "Blacklist"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_active']),
+        ]
+
+    def __str__(self):
+        status = "ACTIVE" if self.is_active else "REVOKED"
+        return f"Blacklist for {self.user.username} ({status})"

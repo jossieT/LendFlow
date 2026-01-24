@@ -151,3 +151,61 @@ class RiskEngineTestCase(TestCase):
         result = RiskEngineService.evaluate(self.app)
         self.assertFalse(result.is_passed)
         self.assertEqual(result.failed_rule_code, 'POOR_REPAYMENT_HISTORY')
+
+class BlacklistTestCase(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(username='admin', password='password', is_staff=True)
+        self.borrower = User.objects.create_user(username='blacklisted_borrower', password='password')
+        self.product = LoanProduct.objects.create(
+            name="Test Product", 
+            min_amount=100, max_amount=10000, 
+            min_term=1, max_term=12,
+            default_interest_rate=10
+        )
+        self.app = LoanApplication.objects.create(
+            borrower=self.borrower, 
+            product=self.product, 
+            amount=1000, 
+            term=6
+        )
+
+    def test_blacklist_service_lifecycle(self):
+        """Test adding and removing from blacklist."""
+        from compliance.services import BlacklistService
+        
+        # Add to blacklist
+        BlacklistService.add_to_blacklist(self.borrower, "Suspicious activity", self.admin)
+        self.assertTrue(self.borrower.is_blacklisted)
+        self.assertTrue(BlacklistService.is_blacklisted(self.borrower))
+        
+        # Verify Audit Log
+        self.assertTrue(AuditLog.objects.filter(
+            event_type=AuditEventType.USER_BLACKLISTED,
+            object_id=str(self.borrower.pk)
+        ).exists())
+        
+        # Remove from blacklist
+        BlacklistService.remove_from_blacklist(self.borrower, "Cleared", self.admin)
+        self.assertFalse(self.borrower.is_blacklisted)
+        self.assertFalse(BlacklistService.is_blacklisted(self.borrower))
+        
+        # Verify Audit Log
+        self.assertTrue(AuditLog.objects.filter(
+            event_type=AuditEventType.USER_WHITELISTED,
+            object_id=str(self.borrower.pk)
+        ).exists())
+
+    def test_disbursement_blocked_by_blacklist(self):
+        """Verify that disbursement is blocked if user is blacklisted at that moment."""
+        from loan_applications.services import ApplicationService
+        from compliance.services import BlacklistService
+        
+        # Blacklist the user
+        BlacklistService.add_to_blacklist(self.borrower, "Fraud", self.admin)
+        
+        # Attempt disbursement
+        with self.assertRaises(ValidationError) as cm:
+            ApplicationService._apply_disbursement(self.app, self.admin)
+        
+        self.assertIn("blocked", str(cm.exception))
+        self.assertEqual(self.borrower.balance, Decimal('0.00'))
