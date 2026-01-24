@@ -97,22 +97,28 @@ class RepaymentAllocationService:
             payment.save()
 
             # Record successful allocation
-            from ..models import PaymentAuditLog
-            PaymentAuditLog.objects.create(
-                payment=payment,
-                event_type='ALLOCATED',
+            from compliance.services import AuditService
+            from compliance.events import AuditEventType
+            
+            AuditService.log_event(
+                actor=None,  # System-triggered
+                target=payment,
+                event_type=AuditEventType.PAYMENT_ALLOCATED,
                 description=f"Successfully allocated {payment.amount} to {len(allocations)} installments.",
-                metadata={"allocation_count": len(allocations)}
+                payload_after={"allocation_count": len(allocations)}
             )
             
             return allocations
             
         except Exception as e:
-            from ..models import PaymentAuditLog
-            PaymentAuditLog.objects.create(
-                payment=payment,
-                event_type='ALLOCATION_FAILED',
+            from compliance.services import AuditService
+            from compliance.events import AuditEventType
+            
+            AuditService.log_event(
+                actor=None,
+                target=payment,
+                event_type=AuditEventType.ALLOCATION_FAILED,
                 description=f"Allocation failed: {str(e)}",
-                metadata={"error": str(e)}
+                payload_after={"error": str(e)}
             )
             raise e

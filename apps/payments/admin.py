@@ -79,11 +79,22 @@ class PaymentAdmin(admin.ModelAdmin):
 
     def process_allocation_action(self, request, queryset):
         success_count = 0
+        from compliance.services import AuditService
+        from compliance.events import AuditEventType
+        
         for payment in queryset:
             if payment.status == Payment.Status.COMPLETED:
                 from .services.repayment_service import RepaymentAllocationService
                 RepaymentAllocationService.process_payment(payment)
                 success_count += 1
+                
+                # Log manual admin override/trigger
+                AuditService.log_event(
+                    actor=request.user,
+                    target=payment,
+                    event_type=AuditEventType.ADMIN_MANUAL_ALLOCATION,
+                    description=f"Admin {request.user.username} manually triggered fund allocation."
+                )
         self.message_user(request, f"Successfully processed allocation for {success_count} payments.")
     process_allocation_action.short_description = "Process fund allocation for completed payments"
 
