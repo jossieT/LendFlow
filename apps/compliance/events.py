@@ -17,8 +17,11 @@ class AuditEventType(models.TextChoices):
     # Admin Events
     ADMIN_MANUAL_ALLOCATION = 'ADMIN.MANUAL_ALLOCATION', 'Manual Allocation Triggered'
     ADMIN_STATUS_OVERRIDE = 'ADMIN.STATUS_OVERRIDE', 'Status Manually Overridden'
+    ADMIN_LOAN_WRITE_OFF = 'ADMIN.LOAN_WRITE_OFF', 'Loan Written Off'
+    ADMIN_BALANCE_ADJUSTMENT = 'ADMIN.BALANCE_ADJUSTMENT', 'Manual Balance Adjustment'
     
     # Compliance Events
     COMPLIANCE_RISK_EVALUATION = 'COMPLIANCE.RISK_EVALUATION', 'Compliance Risk Evaluation'
     USER_BLACKLISTED = 'COMPLIANCE.USER_BLACKLISTED', 'User Blacklisted'
     USER_WHITELISTED = 'COMPLIANCE.USER_WHITELISTED', 'User Whitelisted'
+    COMPLIANCE_REPORT_GENERATED = 'COMPLIANCE.REPORT_GENERATED', 'Compliance Report Generated'
