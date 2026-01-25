@@ -42,6 +42,13 @@ class ApplicationService:
             if application.term < product.min_term or application.term > product.max_term:
                 raise ValidationError(f"Term must be between {product.min_term} and {product.max_term}")
 
+        # Risk Engine Evaluation
+        if to_status in [LoanApplication.Status.UNDER_REVIEW, LoanApplication.Status.APPROVED]:
+            from compliance.risk_engine import RiskEngineService
+            risk_result = RiskEngineService.evaluate(application, actor=user)
+            if not risk_result.is_passed:
+                raise ValidationError(f"Compliance Check Failed: {risk_result.message}")
+
         # Update application
         application.status = to_status
         application.updated_by = user
@@ -56,6 +63,29 @@ class ApplicationService:
             created_by=user
         )
 
+        # Centralized Audit Logging
+        from compliance.services import AuditService
+        from compliance.events import AuditEventType
+        
+        event_map = {
+            LoanApplication.Status.APPROVED: AuditEventType.LOAN_APPROVED,
+            LoanApplication.Status.REJECTED: AuditEventType.LOAN_REJECTED,
+            LoanApplication.Status.DISBURSED: AuditEventType.LOAN_DISBURSED,
+            LoanApplication.Status.SUBMITTED: AuditEventType.LOAN_APPLICATION_SUBMITTED,
+        }
+        
+        event_type = event_map.get(to_status)
+        if event_type:
+            AuditService.log_event(
+                actor=user,
+                target=application,
+                event_type=event_type,
+                description=f"Status transition: {from_status} -> {to_status}. Reason: {reason}",
+                payload_before={"status": from_status},
+                payload_after={"status": to_status},
+                metadata={"reason": reason}
+            )
+
         # Handle Disbursement logic
         if to_status == LoanApplication.Status.DISBURSED:
             ApplicationService._apply_disbursement(application, user)
@@ -68,6 +98,12 @@ class ApplicationService:
         Credit the borrower's balance.
         """
         borrower = application.borrower
+        
+        # Hard Stop Compliance Check: Disbursement to Blacklisted User
+        from compliance.services import BlacklistService
+        if BlacklistService.is_blacklisted(borrower):
+            raise ValidationError("Disbursement blocked: The user is currently blacklisted.")
+
         borrower.balance += application.amount
         borrower.save()
         

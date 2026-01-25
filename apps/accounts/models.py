@@ -14,6 +14,7 @@ class User(AbstractUser):
         default=Role.BORROWER
     )
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    is_blacklisted = models.BooleanField(default=False, help_text="If true, the user is barred from applying for new loans.")
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
